@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verb Learning Adventure</title>
+    <link rel="stylesheet" href="src/css/style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Welcome Screen -->
+      <div id="welcome-screen" class="screen active">
+        <div class="welcome-content">
+          <h1 class="welcome-title">🌟 Verb Learning Adventure 🌟</h1>
+          <p class="welcome-subtitle">
+            Learn verb forms in a fun and easy way!
+          </p>
+          <div class="mode-buttons">
+            <button
+              class="btn btn--primary btn--large mode-btn"
+              data-mode="learn"
+            >
+              📚 Learn Mode
+              <span class="mode-description"
+                >Discover new verbs with examples</span
+              >
+            </button>
+            <button
+              class="btn btn--primary btn--large mode-btn"
+              data-mode="practice"
+            >
+              🎯 Practice Mode
+              <span class="mode-description"
+                >Interactive games and exercises</span
+              >
+            </button>
+            <button
+              class="btn btn--primary btn--large mode-btn"
+              data-mode="challenge"
+            >
+              🏆 Challenge Mode
+              <span class="mode-description">Test your knowledge</span>
+            </button>
+          </div>
+          <div class="settings-section">
+            <button class="btn btn--outline settings-btn" id="settings-btn">
+              ⚙️ Settings
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Screen -->
+      <div id="settings-screen" class="screen">
+        <div class="settings-content">
+          <h2>Settings</h2>
+          <div class="setting-group">
+            <label class="form-label">Speech Speed:</label>
+            <select id="speech-speed" class="form-control">
+              <option value="0.7">Slow</option>
+              <option value="1" selected>Normal</option>
+              <option value="1.3">Fast</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label class="form-label">Voice Volume:</label>
+            <input
+              type="range"
+              id="voice-volume"
+              class="volume-slider"
+              min="0"
+              max="1"
+              step="0.1"
+              value="0.8"
+            />
+          </div>
+          <div class="setting-group">
+            <label class="form-label">
+              <input type="checkbox" id="auto-play-audio" checked /> Auto-play
+              audio
+            </label>
+          </div>
+          <button class="btn btn--primary" id="back-to-welcome">
+            Back to Main Menu
+          </button>
+        </div>
+      </div>
+
+      <!-- Learn Mode Screen -->
+      <div id="learn-screen" class="screen">
+        <div class="learn-header">
+          <button class="btn btn--outline back-btn" id="learn-back">
+            ← Back
+          </button>
+          <div class="progress-info">
+            <span class="progress-text"
+              >Verb <span id="learn-current">1</span> of
+              <span id="learn-total"></span
+            ></span>
+            <div class="progress-bar">
+              <div class="progress-fill" id="learn-progress"></div>
+            </div>
+          </div>
+        </div>
+        <div class="learn-content">
+          <div class="verb-card">
+            <div class="verb-main">
+              <h2 class="verb-infinitive" id="current-infinitive">go</h2>
+              <button class="btn btn--secondary audio-btn" id="play-infinitive">
+                🔊 Listen
+              </button>
+            </div>
+            <div class="verb-past">
+              <h3>Past Form:</h3>
+              <span class="past-form" id="current-past">went</span>
+              <button class="btn btn--secondary audio-btn" id="play-past">
+                🔊 Listen
+              </button>
+            </div>
+            <div class="verb-definition">
+              <h3>Meaning:</h3>
+              <p id="current-definition">to move from one place to another</p>
+              <button class="btn btn--secondary audio-btn" id="play-definition">
+                🔊 Listen
+              </button>
+            </div>
+            <div class="verb-examples">
+              <div class="example-present">
+                <h4>Present Example:</h4>
+                <p id="current-example">I go to school every day.</p>
+                <button class="btn btn--secondary audio-btn" id="play-example">
+                  🔊 Listen
+                </button>
+              </div>
+              <div class="example-past">
+                <h4>Past Example:</h4>
+                <p id="current-past-example">Yesterday, I went to the park.</p>
+                <button
+                  class="btn btn--secondary audio-btn"
+                  id="play-past-example"
+                >
+                  🔊 Listen
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="navigation-buttons">
+            <button class="btn btn--outline nav-btn" id="prev-verb" disabled>
+              ← Previous
+            </button>
+            <button class="btn btn--primary nav-btn" id="next-verb">
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Practice Mode Screen -->
+      <div id="practice-screen" class="screen">
+        <div class="practice-header">
+          <button class="btn btn--outline back-btn" id="practice-back">
+            ← Back
+          </button>
+          <div class="score-info">
+            <span class="score">Score: <span id="current-score">0</span></span>
+            <span class="streak"
+              >Streak: <span id="current-streak">0</span></span
+            >
+          </div>
+        </div>
+        <div class="practice-content">
+          <div class="activity-selector">
+            <button
+              class="btn btn--primary activity-btn"
+              data-activity="matching"
+            >
+              🎯 Matching Game
+            </button>
+            <button
+              class="btn btn--primary activity-btn"
+              data-activity="fill-blank"
+            >
+              📝 Fill the Blank
+            </button>
+            <button
+              class="btn btn--primary activity-btn"
+              data-activity="pronunciation"
+            >
+              🎤 Pronunciation Practice
+            </button>
+          </div>
+
+          <!-- Matching Game -->
+          <div id="matching-game" class="activity hidden">
+            <h3>Match the verbs with their past forms!</h3>
+            <div class="matching-container">
+              <div class="infinitive-column">
+                <h4>Present Form</h4>
+                <div id="infinitive-cards"></div>
+              </div>
+              <div class="past-column">
+                <h4>Past Form</h4>
+                <div id="past-cards"></div>
+              </div>
+            </div>
+            <button class="btn btn--primary" id="check-matches">
+              Check Answers
+            </button>
+          </div>
+
+          <!-- Fill in the Blank -->
+          <div id="fill-blank-game" class="activity hidden">
+            <h3>Fill in the missing past form!</h3>
+            <div class="question-container">
+              <p class="question-text" id="blank-question">
+                Yesterday, I _____ to the park. (go)
+              </p>
+              <input
+                type="text"
+                class="form-control answer-input"
+                id="blank-answer"
+                placeholder="Type the past form here..."
+              />
+              <div class="question-buttons">
+                <button class="btn btn--primary" id="submit-answer">
+                  Submit
+                </button>
+                <button class="btn btn--secondary" id="hear-question">
+                  🔊 Listen
+                </button>
+              </div>
+            </div>
+            <div class="feedback" id="answer-feedback"></div>
+          </div>
+
+          <!-- Pronunciation Practice -->
+          <div id="pronunciation-game" class="activity hidden">
+            <h3>Practice saying the verb correctly!</h3>
+            <div class="pronunciation-container">
+              <div class="target-word">
+                <h4>Say this word:</h4>
+                <span class="word-to-say" id="target-pronunciation">went</span>
+                <button class="btn btn--secondary" id="play-target-word">
+                  🔊 Listen
+                </button>
+              </div>
+              <div class="recording-controls">
+                <button
+                  class="btn btn--primary recording-btn"
+                  id="start-recording"
+                >
+                  🎤 Start Recording
+                </button>
+                <button
+                  class="btn btn--outline recording-btn"
+                  id="stop-recording"
+                  disabled
+                >
+                  ⏹️ Stop
+                </button>
+              </div>
+              <div class="recording-feedback" id="pronunciation-feedback"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge Mode Screen -->
+      <div id="challenge-screen" class="screen">
+        <div class="challenge-header">
+          <button class="btn btn--outline back-btn" id="challenge-back">
+            ← Back
+          </button>
+          <div class="challenge-info">
+            <span class="question-number"
+              >Question <span id="challenge-current">1</span> of
+              <span id="challenge-total"></span
+            ></span>
+            <span class="challenge-score"
+              >Score: <span id="challenge-score">0</span></span
+            >
+          </div>
+        </div>
+        <div class="challenge-content">
+          <div class="challenge-question">
+            <h3 id="challenge-question-text">What is the past form of "go"?</h3>
+            <div class="challenge-options" id="challenge-options">
+              <button class="btn btn--outline option-btn" data-answer="went">
+                went
+              </button>
+              <button class="btn btn--outline option-btn" data-answer="goes">
+                goes
+              </button>
+              <button class="btn btn--outline option-btn" data-answer="gone">
+                gone
+              </button>
+              <button class="btn btn--outline option-btn" data-answer="going">
+                going
+              </button>
+            </div>
+          </div>
+          <div class="challenge-feedback" id="challenge-feedback"></div>
+          <button class="btn btn--primary hidden" id="next-challenge">
+            Next Question
+          </button>
+          <button class="btn btn--primary hidden" id="finish-challenge">
+            Finish Challenge
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Screen -->
+      <div id="results-screen" class="screen">
+        <div class="results-content">
+          <h2>🎉 Great Job! 🎉</h2>
+          <div class="final-score">
+            <p>Your Final Score: <span id="final-score">0</span></p>
+            <div class="achievements" id="achievements"></div>
+          </div>
+          <div class="results-buttons">
+            <button class="btn btn--primary" id="play-again">Play Again</button>
+            <button class="btn btn--outline" id="back-to-menu">
+              Back to Menu
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="src/js/app.js"></script>
+  </body>
+</html>
