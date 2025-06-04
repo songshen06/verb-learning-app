@@ -252,6 +252,22 @@ class VerbLearningApp {
         const draggedId = e.dataTransfer.getData("text/plain");
         const draggedInfinitive = e.dataTransfer.getData("text/infinitive");
 
+        // 移除之前选中的单词的 selected 类
+        const previouslySelected = document.querySelector(
+          `.verb-card-small.selected[data-verb-id="${dropZone.dataset.droppedId}"]`
+        );
+        if (previouslySelected) {
+          previouslySelected.classList.remove("selected");
+        }
+
+        // 为当前选中的单词添加 selected 类
+        const selectedCard = document.querySelector(
+          `.verb-card-small[data-verb-id="${draggedId}"]`
+        );
+        if (selectedCard) {
+          selectedCard.classList.add("selected");
+        }
+
         dropZone.innerHTML = `<strong>${dropZone.dataset.pastForm}</strong> ← ${draggedInfinitive}`;
         dropZone.dataset.droppedId = draggedId;
 
@@ -274,14 +290,20 @@ class VerbLearningApp {
         const infinitiveCard = document.querySelector(
           `[data-verb-id="${expectedId}"]`
         );
-        if (infinitiveCard) infinitiveCard.classList.add("matched");
+        if (infinitiveCard) {
+          infinitiveCard.classList.add("matched");
+          infinitiveCard.classList.remove("selected");
+        }
         correctMatches++;
       } else if (droppedId) {
         zone.classList.add("incorrect");
         const infinitiveCard = document.querySelector(
           `[data-verb-id="${droppedId}"]`
         );
-        if (infinitiveCard) infinitiveCard.classList.add("incorrect");
+        if (infinitiveCard) {
+          infinitiveCard.classList.add("incorrect");
+          infinitiveCard.classList.remove("selected");
+        }
       }
     });
 

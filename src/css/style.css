@@ -1011,6 +1011,32 @@ select.form-control {
   color: #721c24;
 }
 
+/* 添加已选择单词的样式 */
+.verb-card-small.selected {
+  background: #e0e0e0;
+  border-color: #bdbdbd;
+  color: #757575;
+  cursor: default;
+}
+
+.verb-card-small.selected:hover {
+  transform: none;
+  background: #e0e0e0;
+}
+
+/* Dark mode support for selected cards */
+@media (prefers-color-scheme: dark) {
+  .verb-card-small.selected {
+    background: #424242;
+    border-color: #616161;
+    color: #9e9e9e;
+  }
+
+  .verb-card-small.selected:hover {
+    background: #424242;
+  }
+}
+
 .drop-zone {
   min-height: 50px;
   border: 2px dashed #ccc;
