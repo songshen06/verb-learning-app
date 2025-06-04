@@ -44,10 +44,12 @@ export class UIManager {
   }
 
   initializeEventListeners() {
-    // Back buttons
-    document.querySelectorAll(".back-btn").forEach((btn) => {
-      btn.addEventListener("click", () => this.showScreen("welcome-screen"));
-    });
+    // Back buttons - handle all types of back buttons
+    document
+      .querySelectorAll(".back-btn, #back-to-welcome, #back-to-menu")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => this.showScreen("welcome-screen"));
+      });
 
     // Settings
     document.getElementById("settings-btn")?.addEventListener("click", () => {

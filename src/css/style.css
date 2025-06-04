@@ -1,4 +1,3 @@
-
 :root {
   /* Colors */
   --color-background: rgba(252, 252, 249, 1);
@@ -649,9 +648,9 @@ select.form-control {
 }
 
 @font-face {
-  font-family: 'FKGroteskNeue';
-  src: url('https://www.perplexity.ai/fonts/FKGroteskNeue.woff2')
-    format('woff2');
+  font-family: "FKGroteskNeue";
+  src: url("https://www.perplexity.ai/fonts/FKGroteskNeue.woff2")
+    format("woff2");
 }
 
 /* Additional styles for the Verb Learning Adventure app */
@@ -683,9 +682,9 @@ select.form-control {
 
 .welcome-title {
   font-size: 3rem;
-  color: #4A90E2;
+  color: #4a90e2;
   margin-bottom: var(--space-16);
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .welcome-subtitle {
@@ -705,7 +704,7 @@ select.form-control {
   min-height: 80px;
   padding: var(--space-20);
   font-size: var(--font-size-xl);
-  background: linear-gradient(135deg, #4A90E2 0%, #6BCF7F 100%);
+  background: linear-gradient(135deg, #4a90e2 0%, #6bcf7f 100%);
   border: none;
   border-radius: var(--radius-lg);
   color: white;
@@ -738,13 +737,13 @@ select.form-control {
 .settings-btn {
   padding: var(--space-12) var(--space-20);
   font-size: var(--font-size-lg);
-  border: 2px solid #4A90E2;
-  color: #4A90E2;
+  border: 2px solid #4a90e2;
+  color: #4a90e2;
   background: transparent;
 }
 
 .settings-btn:hover {
-  background: #4A90E2;
+  background: #4a90e2;
   color: white;
 }
 
@@ -801,7 +800,7 @@ select.form-control {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4A90E2, #6BCF7F);
+  background: linear-gradient(90deg, #4a90e2, #6bcf7f);
   transition: width var(--duration-normal) var(--ease-standard);
 }
 
@@ -827,7 +826,7 @@ select.form-control {
 
 .verb-infinitive {
   font-size: 3rem;
-  color: #4A90E2;
+  color: #4a90e2;
   margin-bottom: var(--space-16);
   font-weight: var(--font-weight-bold);
 }
@@ -844,7 +843,7 @@ select.form-control {
 
 .past-form {
   font-size: var(--font-size-2xl);
-  color: #6BCF7F;
+  color: #6bcf7f;
   font-weight: var(--font-weight-semibold);
 }
 
@@ -861,14 +860,15 @@ select.form-control {
   gap: var(--space-16);
 }
 
-.example-present, .example-past {
+.example-present,
+.example-past {
   padding: var(--space-16);
   border-radius: var(--radius-base);
   background: #f0f8ff;
 }
 
 .audio-btn {
-  background: #7CB9E8;
+  background: #7cb9e8;
   color: white;
   border: none;
   padding: var(--space-8) var(--space-12);
@@ -909,11 +909,11 @@ select.form-control {
 }
 
 .score {
-  color: #4A90E2;
+  color: #4a90e2;
 }
 
 .streak {
-  color: #6BCF7F;
+  color: #6bcf7f;
 }
 
 .practice-content {
@@ -931,7 +931,7 @@ select.form-control {
 .activity-btn {
   min-height: 60px;
   padding: var(--space-16) var(--space-24);
-  background: #98D8C8;
+  background: #98d8c8;
   border: none;
   color: white;
   font-size: var(--font-size-lg);
@@ -960,16 +960,19 @@ select.form-control {
   margin: var(--space-24) 0;
 }
 
-.infinitive-column, .past-column {
+.infinitive-column,
+.past-column {
   text-align: center;
 }
 
-.infinitive-column h4, .past-column h4 {
+.infinitive-column h4,
+.past-column h4 {
   margin-bottom: var(--space-16);
-  color: #4A90E2;
+  color: #4a90e2;
 }
 
-#infinitive-cards, #past-cards {
+#infinitive-cards,
+#past-cards {
   display: flex;
   flex-direction: column;
   gap: var(--space-12);
@@ -998,7 +1001,7 @@ select.form-control {
 
 .verb-card-small.matched {
   background: #d4edda;
-  border-color: #6BCF7F;
+  border-color: #6bcf7f;
   color: #155724;
 }
 
@@ -1018,7 +1021,7 @@ select.form-control {
 }
 
 .drop-zone.drag-over {
-  border-color: #4A90E2;
+  border-color: #4a90e2;
   background: #f0f8ff;
 }
 
@@ -1061,7 +1064,7 @@ select.form-control {
 .feedback.correct {
   background: #d4edda;
   color: #155724;
-  border: 1px solid #6BCF7F;
+  border: 1px solid #6bcf7f;
 }
 
 .feedback.incorrect {
@@ -1083,7 +1086,7 @@ select.form-control {
 .word-to-say {
   display: block;
   font-size: 2.5rem;
-  color: #4A90E2;
+  color: #4a90e2;
   font-weight: var(--font-weight-bold);
   margin: var(--space-16) 0;
 }
@@ -1158,12 +1161,12 @@ select.form-control {
 
 .option-btn:hover {
   background: #f0f8ff;
-  border-color: #4A90E2;
+  border-color: #4a90e2;
 }
 
 .option-btn.correct {
   background: #d4edda;
-  border-color: #6BCF7F;
+  border-color: #6bcf7f;
   color: #155724;
 }
 
@@ -1191,7 +1194,7 @@ select.form-control {
 
 .results-content h2 {
   font-size: 2.5rem;
-  color: #4A90E2;
+  color: #4a90e2;
   margin-bottom: var(--space-24);
 }
 
@@ -1217,7 +1220,7 @@ select.form-control {
 }
 
 .achievement-badge {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: linear-gradient(135deg, #ffd700, #ffa500);
   color: white;
   padding: var(--space-8) var(--space-12);
   border-radius: var(--radius-full);
@@ -1232,16 +1235,23 @@ select.form-control {
 }
 
 /* Back Button */
-.back-btn {
+.back-btn,
+#back-to-welcome,
+#back-to-menu {
   background: transparent;
-  border: 2px solid #4A90E2;
-  color: #4A90E2;
+  border: 2px solid #4a90e2;
+  color: #4a90e2;
   padding: var(--space-8) var(--space-16);
   font-size: var(--font-size-lg);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-standard);
+  border-radius: var(--radius-base);
 }
 
-.back-btn:hover {
-  background: #4A90E2;
+.back-btn:hover,
+#back-to-welcome:hover,
+#back-to-menu:hover {
+  background: #4a90e2;
   color: white;
 }
 
@@ -1250,32 +1260,32 @@ select.form-control {
   .screen {
     padding: var(--space-16);
   }
-  
+
   .welcome-title {
     font-size: 2rem;
   }
-  
+
   .verb-examples {
     grid-template-columns: 1fr;
   }
-  
+
   .matching-container {
     grid-template-columns: 1fr;
   }
-  
+
   .challenge-options {
     grid-template-columns: 1fr;
   }
-  
+
   .mode-buttons {
     gap: var(--space-16);
   }
-  
+
   .activity-selector {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .results-buttons {
     flex-direction: column;
   }
