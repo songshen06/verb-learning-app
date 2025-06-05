@@ -204,3 +204,51 @@ export const VERB_CATEGORIES = {
   ACTION: "action",
   STATE: "state",
 };
+
+// Transform verbData to match test expectations
+export const VERBS = verbData.map((verb) => {
+  // Define proper past participles for irregular verbs
+  const pastParticiples = {
+    go: "gone",
+    take: "taken",
+    see: "seen",
+    is: "been",
+    do: "done",
+    build: "built",
+    tell: "told",
+    wear: "worn",
+    eat: "eaten",
+    have: "had",
+    buy: "bought",
+    read: "read",
+  };
+
+  return {
+    infinitive: verb.infinitive,
+    past: verb.past,
+    pastParticiple: pastParticiples[verb.infinitive] || verb.past, // Use proper past participle or fallback to past
+    definition: verb.definition,
+    examples: [verb.example, verb.past_example],
+    type: verb.type,
+    category: verb.category,
+    id: verb.id,
+  };
+});
+
+// Helper functions
+export function getVerbById(id) {
+  return verbData.find((verb) => verb.id === id);
+}
+
+export function getVerbsByType(type) {
+  return verbData.filter((verb) => verb.type === type);
+}
+
+export function getVerbsByCategory(category) {
+  return verbData.filter((verb) => verb.category === category);
+}
+
+export function getRandomVerbs(count = 5) {
+  const shuffled = [...verbData].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}

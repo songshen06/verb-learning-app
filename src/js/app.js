@@ -11,9 +11,13 @@ class VerbLearningApp {
     this.gameManager = new GameManager();
     this.uiManager = new UIManager();
     this.settings = { ...DEFAULT_SETTINGS };
-    this.currentVerbIndex = 0;
+    this.currentVerbIndex = 0; // For learn mode
+    this.currentChallengeIndex = 0; // For challenge mode
     this.challengeQuestions = [];
     this.matchingPairs = {};
+    // Fill blank game state
+    this.currentFillBlankVerb = null;
+    this.userAnswer = [];
 
     this.initializeApp();
   }
@@ -26,6 +30,7 @@ class VerbLearningApp {
     this.initializeLearnMode();
     this.initializePracticeMode();
     this.initializeChallengeMode();
+    this.initializeResultsScreen();
 
     // Load theme
     this.uiManager.loadTheme();
@@ -162,6 +167,8 @@ class VerbLearningApp {
       button.addEventListener("click", () => {
         const activity = button.dataset.activity;
         this.showActivity(activity);
+        // Regenerate the specific activity when selected
+        this.refreshActivity(activity);
       });
     });
 
@@ -169,6 +176,21 @@ class VerbLearningApp {
     this.initializeMatchingGame();
     this.initializeFillBlankGame();
     this.initializePronunciationGame();
+  }
+
+  // Refresh specific activity
+  refreshActivity(activityType) {
+    switch (activityType) {
+      case "matching":
+        this.setupMatchingGame();
+        break;
+      case "fill-blank":
+        this.setupFillBlankGame();
+        break;
+      case "pronunciation":
+        this.setupPronunciationGame();
+        break;
+    }
   }
 
   showActivity(activityType) {
@@ -193,6 +215,7 @@ class VerbLearningApp {
   }
 
   setupMatchingGame() {
+    // Always generate fresh verbs for matching
     const selectedVerbs = this.gameManager
       .shuffle(verbData)
       .slice(0, GAME_SETTINGS.matchingGameVerbs);
@@ -201,9 +224,23 @@ class VerbLearningApp {
 
     if (!infinitiveContainer || !pastContainer) return;
 
+    // Clear previous game state
     infinitiveContainer.innerHTML = "";
     pastContainer.innerHTML = "";
     this.matchingPairs = {};
+
+    // Remove any previous styling
+    document
+      .querySelectorAll(".verb-card-small, .drop-zone")
+      .forEach((element) => {
+        element.classList.remove(
+          "matched",
+          "incorrect",
+          "selected",
+          "dragging",
+          "drag-over"
+        );
+      });
 
     // Create infinitive cards (draggable)
     selectedVerbs.forEach((verb) => {
@@ -316,7 +353,21 @@ class VerbLearningApp {
         "Excellent! All matches are correct!",
         this.settings
       );
-      setTimeout(() => this.setupMatchingGame(), 3000);
+
+      // Show completion message and ask if user wants to continue
+      setTimeout(() => {
+        const continueGame = confirm(
+          "🎉 Well done! All matches are correct!\n\nWould you like to try another set of words?"
+        );
+        if (continueGame) {
+          this.setupMatchingGame();
+        } else {
+          // Hide the activity and return to activity selector
+          document.querySelectorAll(".activity").forEach((activity) => {
+            activity.classList.add("hidden");
+          });
+        }
+      }, 2000);
     } else {
       this.speechManager.speak(
         `Good try! You got ${correctMatches} out of ${totalMatches} correct.`,
@@ -332,71 +383,240 @@ class VerbLearningApp {
       .getElementById("submit-answer")
       ?.addEventListener("click", () => this.checkBlankAnswer());
     document.getElementById("hear-question")?.addEventListener("click", () => {
-      const questionText =
-        document.getElementById("blank-question")?.textContent;
-      if (questionText) {
-        this.speechManager.speak(questionText, this.settings);
+      // Play the complete sentence instead of the one with blanks
+      if (this.currentFillBlankVerb) {
+        this.speechManager.speak(
+          this.currentFillBlankVerb.past_example,
+          this.settings
+        );
       }
     });
 
     document
-      .getElementById("blank-answer")
-      ?.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-          this.checkBlankAnswer();
-        }
-      });
+      .getElementById("clear-answer")
+      ?.addEventListener("click", () => this.clearAnswer());
 
     this.setupFillBlankGame();
   }
 
   setupFillBlankGame() {
     const randomVerb = verbData[Math.floor(Math.random() * verbData.length)];
-    const questionText = `Yesterday, I _____ ${randomVerb.past_example
-      .split(" ")
-      .slice(3)
-      .join(" ")} (${randomVerb.infinitive})`;
+    this.currentFillBlankVerb = randomVerb;
+    this.userAnswer = new Array(randomVerb.past.length).fill(undefined);
 
+    // Create question using the past example
+    const pastExample = randomVerb.past_example;
+    const questionText = pastExample.replace(randomVerb.past, "_____");
+    const hintText = `(Hint: past form of "${randomVerb.infinitive}")`;
+
+    // Set up question
     const questionElement = document.getElementById("blank-question");
-    const answerInput = document.getElementById("blank-answer");
-    const feedback = document.getElementById("answer-feedback");
+    const hintElement = document.getElementById("hint-text");
+    if (questionElement) questionElement.textContent = questionText;
+    if (hintElement) hintElement.textContent = hintText;
 
-    if (questionElement && answerInput && feedback) {
-      questionElement.textContent = questionText;
-      answerInput.value = "";
-      answerInput.dataset.correctAnswer = randomVerb.past;
+    // Generate scrambled letters
+    this.generateLetterBubbles(randomVerb.past);
+    this.generateAnswerSlots(randomVerb.past.length);
+
+    // Clear feedback
+    const feedback = document.getElementById("answer-feedback");
+    if (feedback) {
       feedback.style.display = "none";
+      feedback.className = "feedback";
     }
 
     if (this.settings.autoPlayAudio) {
       setTimeout(
-        () => this.speechManager.speak(questionText, this.settings),
+        () => this.speechManager.speak(randomVerb.past_example, this.settings),
         500
       );
     }
   }
 
+  generateLetterBubbles(word) {
+    const letters = word.toUpperCase().split("");
+    const scrambledLetters = this.gameManager.shuffle([...letters]);
+
+    const container = document.getElementById("letter-bubbles");
+    if (!container) return;
+
+    container.innerHTML = "";
+    scrambledLetters.forEach((letter, index) => {
+      const bubble = document.createElement("div");
+      bubble.className = "letter-bubble";
+      bubble.textContent = letter;
+      bubble.dataset.letter = letter;
+      bubble.dataset.originalIndex = index;
+
+      bubble.addEventListener("click", () => this.selectLetter(bubble));
+      container.appendChild(bubble);
+    });
+  }
+
+  generateAnswerSlots(length) {
+    const container = document.getElementById("answer-slots");
+    if (!container) return;
+
+    container.innerHTML = "";
+    for (let i = 0; i < length; i++) {
+      const slot = document.createElement("div");
+      slot.className = "answer-slot";
+      slot.dataset.position = i;
+
+      slot.addEventListener("click", () => this.removeFromSlot(i));
+      container.appendChild(slot);
+    }
+  }
+
+  selectLetter(bubble) {
+    if (bubble.classList.contains("used")) {
+      return;
+    }
+
+    const letter = bubble.dataset.letter;
+    const nextEmptySlot = this.findNextEmptySlot();
+
+    if (nextEmptySlot !== -1) {
+      // Add letter to answer
+      this.userAnswer[nextEmptySlot] = letter;
+
+      // Update slot visually
+      const slot = document.querySelector(`[data-position="${nextEmptySlot}"]`);
+      if (slot) {
+        slot.textContent = letter;
+        slot.classList.add("filled");
+        slot.dataset.bubbleIndex = bubble.dataset.originalIndex;
+      }
+
+      // Mark bubble as used
+      bubble.classList.add("used");
+    }
+  }
+
+  removeFromSlot(position) {
+    const slot = document.querySelector(`[data-position="${position}"]`);
+    if (!slot || !slot.classList.contains("filled")) return;
+
+    const bubbleIndex = slot.dataset.bubbleIndex;
+    // Find the bubble by its original index
+    const bubbles = document.querySelectorAll(".letter-bubble");
+    let bubble = null;
+    bubbles.forEach((b) => {
+      if (b.dataset.originalIndex === bubbleIndex) {
+        bubble = b;
+      }
+    });
+
+    // Clear slot
+    slot.textContent = "";
+    slot.classList.remove("filled");
+    delete slot.dataset.bubbleIndex;
+    this.userAnswer[position] = undefined;
+
+    // Make bubble available again
+    if (bubble) {
+      bubble.classList.remove("used");
+    }
+  }
+
+  findNextEmptySlot() {
+    // Initialize userAnswer if not done yet
+    if (!this.userAnswer) {
+      this.userAnswer = [];
+    }
+
+    // Find first empty slot
+    for (let i = 0; i < this.currentFillBlankVerb.past.length; i++) {
+      if (!this.userAnswer[i]) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  clearAnswer() {
+    // Clear all slots
+    if (this.currentFillBlankVerb) {
+      this.userAnswer = new Array(this.currentFillBlankVerb.past.length).fill(
+        undefined
+      );
+    } else {
+      this.userAnswer = [];
+    }
+
+    document.querySelectorAll(".answer-slot").forEach((slot) => {
+      slot.textContent = "";
+      slot.classList.remove("filled");
+      delete slot.dataset.bubbleIndex;
+    });
+
+    // Make all bubbles available
+    document.querySelectorAll(".letter-bubble").forEach((bubble) => {
+      bubble.classList.remove("used");
+    });
+  }
+
   checkBlankAnswer() {
-    const answerInput = document.getElementById("blank-answer");
+    if (!this.currentFillBlankVerb) return;
+
     const feedback = document.getElementById("answer-feedback");
+    if (!feedback) return;
 
-    if (!answerInput || !feedback) return;
+    // Get user's answer from slots
+    const userAnswerText = this.userAnswer
+      .filter(Boolean)
+      .join("")
+      .toLowerCase();
+    const correctAnswer = this.currentFillBlankVerb.past.toLowerCase();
 
-    const userAnswer = answerInput.value.trim().toLowerCase();
-    const correctAnswer = answerInput.dataset.correctAnswer.toLowerCase();
+    // Check if answer is complete
+    if (
+      this.userAnswer.filter(Boolean).length !==
+      this.currentFillBlankVerb.past.length
+    ) {
+      this.uiManager.showFeedback(
+        feedback,
+        "🤔 Please complete the word first!",
+        false
+      );
+      this.speechManager.speak("Please complete the word first", this.settings);
+      return;
+    }
 
-    if (userAnswer === correctAnswer) {
-      this.uiManager.showFeedback(feedback, "🎉 Correct! Well done!", true);
+    if (userAnswerText === correctAnswer) {
+      this.uiManager.showFeedback(
+        feedback,
+        "🎉 Excellent! You got it right! 🌟",
+        true
+      );
       const result = this.gameManager.updateScore(
         GAME_SETTINGS.pointsPerCorrect
       );
       this.uiManager.updateScoreDisplay(result.score, result.streak);
-      this.speechManager.speak("Correct! Well done!", this.settings);
-      setTimeout(() => this.setupFillBlankGame(), 2000);
+      this.speechManager.speak("Excellent! You got it right!", this.settings);
+
+      // Add celebration effect
+      this.addCelebrationEffect();
+
+      // Ask if user wants to continue
+      setTimeout(() => {
+        const continueGame = confirm(
+          "🌟 Perfect! You got it right!\n\nWould you like to try another word?"
+        );
+        if (continueGame) {
+          this.setupFillBlankGame();
+        } else {
+          // Hide the activity and return to activity selector
+          document.querySelectorAll(".activity").forEach((activity) => {
+            activity.classList.add("hidden");
+          });
+        }
+      }, 2500);
     } else {
       this.uiManager.showFeedback(
         feedback,
-        `Not quite right. The correct answer is "${correctAnswer}". Try again!`,
+        `🌱 Not quite right. The correct answer is "${this.currentFillBlankVerb.past}". Try again!`,
         false
       );
       const result = this.gameManager.updateScore(
@@ -404,10 +624,29 @@ class VerbLearningApp {
       );
       this.uiManager.updateScoreDisplay(result.score, result.streak);
       this.speechManager.speak(
-        `Not quite right. The correct answer is ${correctAnswer}`,
+        `Not quite right. The correct answer is ${this.currentFillBlankVerb.past}`,
         this.settings
       );
+
+      // Clear the answer for retry
+      setTimeout(() => this.clearAnswer(), 1500);
     }
+  }
+
+  addCelebrationEffect() {
+    // Add sparkling effect to correct answer slots
+    document.querySelectorAll(".answer-slot.filled").forEach((slot, index) => {
+      setTimeout(() => {
+        slot.style.animation = "sparkle 0.6s ease-in-out";
+        slot.addEventListener(
+          "animationend",
+          () => {
+            slot.style.animation = "";
+          },
+          { once: true }
+        );
+      }, index * 100);
+    });
   }
 
   // Pronunciation Game
@@ -472,7 +711,8 @@ class VerbLearningApp {
 
     if (targetWord && feedback) {
       targetWord.textContent = wordToSay;
-      feedback.style.display = "none";
+      feedback.style.display = "block";
+      feedback.className = "recording-feedback"; // Reset class
       feedback.innerHTML = `
         <div class="pronunciation-instructions">
           <p>Please pronounce the word: <strong>${wordToSay}</strong></p>
@@ -488,8 +728,14 @@ class VerbLearningApp {
     // 重置录音按钮状态
     const startBtn = document.getElementById("start-recording");
     const stopBtn = document.getElementById("stop-recording");
-    if (startBtn) startBtn.disabled = false;
-    if (stopBtn) stopBtn.disabled = true;
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.textContent = "🎤 Start Recording";
+    }
+    if (stopBtn) {
+      stopBtn.disabled = true;
+      stopBtn.textContent = "⏹️ Stop";
+    }
 
     if (this.settings.autoPlayAudio) {
       setTimeout(() => this.speechManager.speak(wordToSay, this.settings), 500);
@@ -541,8 +787,20 @@ class VerbLearningApp {
             );
             this.speechManager.speak("Perfect pronunciation!", this.settings);
 
-            // 2秒后自动进入下一题
-            setTimeout(() => this.setupPronunciationGame(), 2000);
+            // Ask if user wants to continue
+            setTimeout(() => {
+              const continueGame = confirm(
+                "🎤 Perfect pronunciation!\n\nWould you like to practice another word?"
+              );
+              if (continueGame) {
+                this.setupPronunciationGame();
+              } else {
+                // Hide the activity and return to activity selector
+                document.querySelectorAll(".activity").forEach((activity) => {
+                  activity.classList.add("hidden");
+                });
+              }
+            }, 2000);
           } else {
             feedback.innerHTML = `
               <div class="pronunciation-result incorrect">
@@ -600,6 +858,7 @@ class VerbLearningApp {
 
   // Challenge Mode
   initializeChallengeMode() {
+    this.currentChallengeIndex = 0;
     this.challengeQuestions = this.generateChallengeQuestions();
     this.displayChallengeQuestion();
 
@@ -639,7 +898,7 @@ class VerbLearningApp {
   }
 
   displayChallengeQuestion() {
-    const question = this.challengeQuestions[this.currentVerbIndex];
+    const question = this.challengeQuestions[this.currentChallengeIndex];
     if (!question) return;
 
     // Update question text
@@ -680,7 +939,7 @@ class VerbLearningApp {
     const currentElement = document.getElementById("challenge-current");
     const totalElement = document.getElementById("challenge-total");
     if (currentElement)
-      currentElement.textContent = (this.currentVerbIndex + 1).toString();
+      currentElement.textContent = (this.currentChallengeIndex + 1).toString();
     if (totalElement)
       totalElement.textContent = this.challengeQuestions.length.toString();
 
@@ -694,7 +953,7 @@ class VerbLearningApp {
   }
 
   selectChallengeAnswer(selectedAnswer) {
-    const question = this.challengeQuestions[this.currentVerbIndex];
+    const question = this.challengeQuestions[this.currentChallengeIndex];
     if (!question) return;
 
     // 确保答案比较时都转换为小写并去除空格
@@ -723,6 +982,11 @@ class VerbLearningApp {
         GAME_SETTINGS.pointsPerCorrect
       );
       this.uiManager.updateScoreDisplay(result.score, result.streak);
+      // Update challenge score display
+      const challengeScoreElement = document.getElementById("challenge-score");
+      if (challengeScoreElement) {
+        challengeScoreElement.textContent = result.score;
+      }
       this.speechManager.speak("Correct! Well done!", this.settings);
     } else {
       this.uiManager.showFeedback(
@@ -741,7 +1005,7 @@ class VerbLearningApp {
       const nextBtn = document.getElementById("next-challenge");
       const finishBtn = document.getElementById("finish-challenge");
 
-      if (this.currentVerbIndex < this.challengeQuestions.length - 1) {
+      if (this.currentChallengeIndex < this.challengeQuestions.length - 1) {
         if (nextBtn) nextBtn.classList.remove("hidden");
       } else {
         if (finishBtn) finishBtn.classList.remove("hidden");
@@ -750,7 +1014,7 @@ class VerbLearningApp {
   }
 
   nextChallengeQuestion() {
-    this.currentVerbIndex++;
+    this.currentChallengeIndex++;
     this.displayChallengeQuestion();
   }
 
@@ -791,9 +1055,98 @@ class VerbLearningApp {
       this.settings
     );
   }
+
+  // Initialize results screen
+  initializeResultsScreen() {
+    // Play again button
+    document.getElementById("play-again")?.addEventListener("click", () => {
+      this.resetChallengeMode();
+      this.uiManager.showScreen("challenge-screen");
+    });
+
+    // Back to menu button
+    document.getElementById("back-to-menu")?.addEventListener("click", () => {
+      this.resetAllModes();
+      this.uiManager.showScreen("welcome-screen");
+    });
+  }
+
+  // Reset challenge mode
+  resetChallengeMode() {
+    this.currentChallengeIndex = 0;
+    this.gameManager.resetGame();
+    this.challengeQuestions = this.generateChallengeQuestions();
+    this.displayChallengeQuestion();
+
+    // Reset challenge score display
+    const challengeScoreElement = document.getElementById("challenge-score");
+    if (challengeScoreElement) {
+      challengeScoreElement.textContent = "0";
+    }
+  }
+
+  // Reset all modes
+  resetAllModes() {
+    this.currentVerbIndex = 0;
+    this.currentChallengeIndex = 0;
+    this.gameManager.resetGame();
+    this.displayCurrentVerb();
+    // Also reset practice mode components
+    this.matchingPairs = {};
+  }
+
+  // Method called when entering specific modes to ensure proper reset
+  enterMode(mode) {
+    switch (mode) {
+      case "learn":
+        this.currentVerbIndex = 0;
+        this.displayCurrentVerb();
+        break;
+      case "challenge":
+        this.resetChallengeMode();
+        break;
+      case "practice":
+        this.resetPracticeMode();
+        break;
+    }
+  }
+
+  // Reset practice mode
+  resetPracticeMode() {
+    // Reset game state
+    this.gameManager.resetGame();
+    this.uiManager.updateScoreDisplay(0, 0);
+
+    // Hide all activities
+    document.querySelectorAll(".activity").forEach((activity) => {
+      activity.classList.add("hidden");
+    });
+
+    // Reset matching pairs
+    this.matchingPairs = {};
+
+    // Regenerate all games with fresh data
+    this.setupMatchingGame();
+    this.setupFillBlankGame();
+    this.setupPronunciationGame();
+
+    // Clear any feedback
+    const feedbacks = document.querySelectorAll(".feedback");
+    feedbacks.forEach((feedback) => {
+      feedback.style.display = "none";
+      feedback.textContent = "";
+    });
+
+    // Reset fill blank game state
+    this.currentFillBlankVerb = null;
+    this.userAnswer = [];
+  }
 }
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", () => {
   window.app = new VerbLearningApp();
 });
+
+// Export for testing
+export { VerbLearningApp };

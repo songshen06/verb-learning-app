@@ -210,24 +210,55 @@
 
           <!-- Fill in the Blank -->
           <div id="fill-blank-game" class="activity hidden">
-            <h3>Fill in the missing past form!</h3>
-            <div class="question-container">
-              <p class="question-text" id="blank-question">
-                Yesterday, I _____ to the park. (go)
-              </p>
-              <input
-                type="text"
-                class="form-control answer-input"
-                id="blank-answer"
-                placeholder="Type the past form here..."
-              />
-              <div class="question-buttons">
-                <button class="btn btn--primary" id="submit-answer">
-                  Submit
-                </button>
-                <button class="btn btn--secondary" id="hear-question">
-                  🔊 Listen
-                </button>
+            <div class="game-scene">
+              <div class="sky-section">
+                <div class="sun">🌞</div>
+                <div class="clouds">☁️ ☁️</div>
+              </div>
+
+              <div class="game-content">
+                <h3 class="game-title">🌳 Word Garden Challenge! 🌳</h3>
+
+                <div class="question-container">
+                  <p class="question-text" id="blank-question">
+                    Yesterday, I _____ to the park.
+                  </p>
+                  <div class="hint-text" id="hint-text">
+                    (Hint: past form of "go")
+                  </div>
+                </div>
+
+                <div class="letters-container">
+                  <h4 class="letters-title">🔤 Use these letters:</h4>
+                  <div class="letter-bubbles" id="letter-bubbles">
+                    <!-- Letter bubbles will be generated here -->
+                  </div>
+                </div>
+
+                <div class="answer-area">
+                  <div class="answer-slots" id="answer-slots">
+                    <!-- Answer slots will be generated here -->
+                  </div>
+                  <button
+                    class="btn btn--primary submit-btn"
+                    id="submit-answer"
+                  >
+                    ✅ Check Answer
+                  </button>
+                </div>
+
+                <div class="game-controls">
+                  <button class="btn btn--secondary" id="hear-question">
+                    🔊 Listen
+                  </button>
+                  <button class="btn btn--outline" id="clear-answer">
+                    🗑️ Clear
+                  </button>
+                </div>
+              </div>
+
+              <div class="ground-section">
+                <div class="flowers">🌸 🌼 🌸 🌼 🌸</div>
               </div>
             </div>
             <div class="feedback" id="answer-feedback"></div>

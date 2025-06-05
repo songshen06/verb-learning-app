@@ -19,12 +19,42 @@ export class UIManager {
     }
   }
 
-  showFeedback(element, message, isCorrect) {
-    if (!element) return;
+  showFeedback(message, type = "success") {
+    // If first parameter is a DOM element, use the old signature
+    if (typeof message === "object" && message.tagName) {
+      const element = message;
+      const msg = type;
+      const isCorrect = arguments[2];
 
-    element.textContent = message;
-    element.className = `feedback ${isCorrect ? "correct" : "incorrect"}`;
-    element.style.display = "block";
+      if (!element) return;
+
+      element.textContent = msg;
+      element.className = `feedback ${isCorrect ? "correct" : "incorrect"}`;
+      element.style.display = "block";
+      return;
+    }
+
+    // New signature for tests
+    let feedbackElement = document.querySelector(".feedback-message");
+    if (!feedbackElement) {
+      feedbackElement = document.createElement("div");
+      feedbackElement.className = "feedback-message";
+      document.body.appendChild(feedbackElement);
+    }
+
+    feedbackElement.textContent = message;
+    feedbackElement.className = `feedback-message ${type}`;
+    feedbackElement.style.display = "block";
+  }
+
+  updateScore(score) {
+    let scoreElement = document.querySelector(".score-display");
+    if (!scoreElement) {
+      scoreElement = document.createElement("div");
+      scoreElement.className = "score-display";
+      document.body.appendChild(scoreElement);
+    }
+    scoreElement.textContent = score.toString();
   }
 
   updateProgress(current, total) {
@@ -48,7 +78,13 @@ export class UIManager {
     document
       .querySelectorAll(".back-btn, #back-to-welcome, #back-to-menu")
       .forEach((btn) => {
-        btn.addEventListener("click", () => this.showScreen("welcome-screen"));
+        btn.addEventListener("click", () => {
+          this.showScreen("welcome-screen");
+          // Reset any ongoing game states when returning to welcome
+          if (window.app) {
+            window.app.gameManager.resetGame();
+          }
+        });
       });
 
     // Settings
@@ -60,6 +96,12 @@ export class UIManager {
     document.querySelectorAll(".mode-btn").forEach((button) => {
       button.addEventListener("click", () => {
         const mode = button.dataset.mode;
+
+        // Always reset modes when switching - ensure fresh start every time
+        if (window.app) {
+          window.app.enterMode(mode);
+        }
+
         this.showScreen(`${mode}-screen`);
       });
     });
