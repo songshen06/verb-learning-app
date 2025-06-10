@@ -18,6 +18,10 @@ class VerbLearningApp {
     // Fill blank game state
     this.currentFillBlankVerb = null;
     this.userAnswer = [];
+    // Letter choice game state
+    this.currentLetterChoiceVerb = null;
+    this.missingLetterIndex = 0;
+    this.correctLetter = "";
 
     this.initializeApp();
   }
@@ -175,6 +179,7 @@ class VerbLearningApp {
     // Initialize practice activities
     this.initializeMatchingGame();
     this.initializeFillBlankGame();
+    this.initializeLetterChoiceGame();
     this.initializePronunciationGame();
   }
 
@@ -186,6 +191,9 @@ class VerbLearningApp {
         break;
       case "fill-blank":
         this.setupFillBlankGame();
+        break;
+      case "letter-choice":
+        this.setupLetterChoiceGame();
         break;
       case "pronunciation":
         this.setupPronunciationGame();
@@ -649,6 +657,205 @@ class VerbLearningApp {
     });
   }
 
+  // Letter Choice Game
+  initializeLetterChoiceGame() {
+    document
+      .getElementById("hear-letter-question")
+      ?.addEventListener("click", () => {
+        if (this.currentLetterChoiceVerb) {
+          this.speechManager.speak(
+            this.currentLetterChoiceVerb.past_example,
+            this.settings
+          );
+        }
+      });
+
+    document
+      .getElementById("next-letter-word")
+      ?.addEventListener("click", () => this.setupLetterChoiceGame());
+
+    this.setupLetterChoiceGame();
+  }
+
+  setupLetterChoiceGame() {
+    const randomVerb = verbData[Math.floor(Math.random() * verbData.length)];
+    this.currentLetterChoiceVerb = randomVerb;
+
+    // Choose which letter to remove (avoid first and last positions for better challenge)
+    const word = randomVerb.past.toLowerCase();
+    const availablePositions = [];
+    for (let i = 1; i < word.length - 1; i++) {
+      availablePositions.push(i);
+    }
+
+    // If word is too short, include all positions
+    if (availablePositions.length === 0) {
+      for (let i = 0; i < word.length; i++) {
+        availablePositions.push(i);
+      }
+    }
+
+    this.missingLetterIndex =
+      availablePositions[Math.floor(Math.random() * availablePositions.length)];
+    this.correctLetter = word[this.missingLetterIndex];
+
+    // Create question using the past example
+    const pastExample = randomVerb.past_example;
+    const questionText = pastExample.replace(randomVerb.past, "_____");
+    const hintText = `(Hint: past form of "${randomVerb.infinitive}")`;
+
+    // Set up question
+    const questionElement = document.getElementById("letter-choice-question");
+    const hintElement = document.getElementById("letter-choice-hint");
+    if (questionElement) questionElement.textContent = questionText;
+    if (hintElement) hintElement.textContent = hintText;
+
+    // Generate word display with missing letter
+    this.generateWordDisplay(word);
+
+    // Generate letter choices
+    this.generateLetterChoices();
+
+    // Clear feedback
+    const feedback = document.getElementById("letter-choice-feedback");
+    if (feedback) {
+      feedback.style.display = "none";
+      feedback.className = "feedback";
+    }
+
+    if (this.settings.autoPlayAudio) {
+      setTimeout(
+        () => this.speechManager.speak(randomVerb.past_example, this.settings),
+        500
+      );
+    }
+  }
+
+  generateWordDisplay(word) {
+    const container = document.getElementById("word-letters");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    for (let i = 0; i < word.length; i++) {
+      const letterDiv = document.createElement("div");
+      letterDiv.className = "word-letter";
+
+      if (i === this.missingLetterIndex) {
+        letterDiv.className += " blank";
+        letterDiv.dataset.position = i;
+      } else {
+        letterDiv.textContent = word[i];
+      }
+
+      container.appendChild(letterDiv);
+    }
+  }
+
+  generateLetterChoices() {
+    const container = document.getElementById("letter-choices");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    // Create array of letters including the correct one and 3 distractors
+    const letters = [this.correctLetter];
+    const alphabet = "abcdefghijklmnopqrstuvwxyz";
+
+    // Add 3 random different letters as distractors
+    while (letters.length < 4) {
+      const randomLetter =
+        alphabet[Math.floor(Math.random() * alphabet.length)];
+      if (!letters.includes(randomLetter)) {
+        letters.push(randomLetter);
+      }
+    }
+
+    // Shuffle the letters
+    const shuffledLetters = this.gameManager.shuffle([...letters]);
+
+    shuffledLetters.forEach((letter) => {
+      const button = document.createElement("button");
+      button.className = "choice-btn";
+      button.textContent = letter;
+      button.dataset.letter = letter;
+
+      button.addEventListener("click", () => this.selectLetterChoice(button));
+      container.appendChild(button);
+    });
+  }
+
+  selectLetterChoice(button) {
+    const selectedLetter = button.dataset.letter;
+    const feedback = document.getElementById("letter-choice-feedback");
+    const allChoices = document.querySelectorAll(".choice-btn");
+
+    // Disable all choice buttons
+    allChoices.forEach((btn) => (btn.disabled = true));
+
+    if (selectedLetter === this.correctLetter) {
+      // Correct answer
+      button.classList.add("correct");
+
+      // Fill in the blank letter
+      const blankLetter = document.querySelector(".word-letter.blank");
+      if (blankLetter) {
+        blankLetter.textContent = selectedLetter;
+        blankLetter.classList.remove("blank");
+        blankLetter.classList.add("filled");
+      }
+
+      this.uiManager.showFeedback(
+        feedback,
+        "🎉 Correct! Well done!",
+        "correct"
+      );
+
+      const scoreResult = this.gameManager.updateScore(
+        GAME_SETTINGS.pointsPerCorrect
+      );
+      this.uiManager.updateScoreDisplay(scoreResult.score, scoreResult.streak);
+
+      // Automatically generate new word after 2 seconds
+      setTimeout(() => {
+        this.setupLetterChoiceGame();
+      }, 2000);
+    } else {
+      // Incorrect answer
+      button.classList.add("incorrect");
+
+      // Show the correct answer
+      allChoices.forEach((btn) => {
+        if (btn.dataset.letter === this.correctLetter) {
+          btn.classList.add("correct");
+        }
+      });
+
+      // Fill in the correct letter
+      const blankLetter = document.querySelector(".word-letter.blank");
+      if (blankLetter) {
+        blankLetter.textContent = this.correctLetter;
+        blankLetter.classList.remove("blank");
+        blankLetter.classList.add("filled");
+      }
+
+      this.uiManager.showFeedback(
+        feedback,
+        `❌ Not quite right. The correct letter is "${this.correctLetter}".`,
+        "incorrect"
+      );
+
+      this.gameManager.updateScore(0); // No points for incorrect answer
+      const scoreResult = this.gameManager.getScore();
+      this.uiManager.updateScoreDisplay(scoreResult.score, scoreResult.streak);
+
+      // Automatically generate new word after 3 seconds
+      setTimeout(() => {
+        this.setupLetterChoiceGame();
+      }, 3000);
+    }
+  }
+
   // Pronunciation Game
   initializePronunciationGame() {
     if (!this.speechManager.recognition) {
@@ -1022,7 +1229,8 @@ class VerbLearningApp {
     const finalScore = this.gameManager.currentScore;
     const totalPossible =
       this.challengeQuestions.length * GAME_SETTINGS.pointsPerCorrect;
-    const percentage = Math.round((finalScore / totalPossible) * 100);
+    const percentage =
+      totalPossible > 0 ? Math.round((finalScore / totalPossible) * 100) : 0;
 
     const finalScoreElement = document.getElementById("final-score");
     if (finalScoreElement) {
@@ -1054,6 +1262,14 @@ class VerbLearningApp {
       `Congratulations! You scored ${finalScore} out of ${totalPossible} points. That's ${percentage} percent!`,
       this.settings
     );
+
+    // 记录成绩到 ScoreManager
+    if (window.scoreManager) {
+      window.scoreManager.recordScore("challenge", finalScore, {
+        totalPossible,
+        percentage,
+      });
+    }
   }
 
   // Initialize results screen

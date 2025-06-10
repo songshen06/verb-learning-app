@@ -8,9 +8,58 @@
   </head>
   <body>
     <div class="app-container">
+      <!-- Student Login Screen -->
+      <div id="login-screen" class="screen active">
+        <div class="login-content">
+          <h1 class="login-title">🎓 欢迎来到动词学习中心</h1>
+          <p class="login-subtitle">请输入你的学生ID开始学习之旅</p>
+
+          <div class="login-form">
+            <div class="input-group">
+              <label for="student-id-input" class="input-label">学生ID：</label>
+              <input
+                type="text"
+                id="student-id-input"
+                class="form-control login-input"
+                placeholder="输入你的姓名或学号"
+                maxlength="20"
+              />
+            </div>
+
+            <button class="btn btn--primary btn--large" id="login-btn">
+              🚀 开始学习
+            </button>
+
+            <div class="login-options">
+              <p class="login-help">第一次使用？输入你的姓名创建新档案</p>
+
+              <div
+                class="existing-students"
+                id="existing-students"
+                style="display: none"
+              >
+                <h4>选择已有档案：</h4>
+                <div class="student-list" id="student-list">
+                  <!-- 动态生成学生列表 -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Welcome Screen -->
-      <div id="welcome-screen" class="screen active">
+      <div id="welcome-screen" class="screen">
         <div class="welcome-content">
+          <div class="student-info">
+            <span class="current-student"
+              >👨‍🎓 当前学生: <span id="current-student-display"></span
+            ></span>
+            <button class="btn btn--outline btn--sm" id="switch-student-btn">
+              切换学生
+            </button>
+          </div>
+
           <h1 class="welcome-title">🌟 Verb Learning Adventure 🌟</h1>
           <p class="welcome-subtitle">
             Learn verb forms in a fun and easy way!
@@ -80,9 +129,102 @@
               audio
             </label>
           </div>
+
+          <!-- 学生账户管理部分 -->
+          <div class="setting-group">
+            <h3>👨‍🎓 学生账户</h3>
+            <div class="account-info">
+              <p>当前登录: <span id="settings-current-student"></span></p>
+              <div class="account-buttons">
+                <button class="btn btn--outline" id="logout-btn">
+                  🚪 切换/注销学生
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 成绩管理部分 -->
+          <div class="setting-group">
+            <h3>📊 学习成绩管理</h3>
+            <div class="score-buttons">
+              <button class="btn btn--secondary" id="view-scores">
+                📈 查看成绩统计
+              </button>
+              <button class="btn btn--secondary" id="export-scores">
+                📤 导出成绩
+              </button>
+              <button class="btn btn--secondary" id="import-scores">
+                📥 导入成绩
+              </button>
+              <input
+                type="file"
+                id="score-file-input"
+                accept=".json"
+                style="display: none"
+              />
+            </div>
+          </div>
+
           <button class="btn btn--outline back-btn" id="back-to-welcome">
             Back to Main Menu
           </button>
+        </div>
+      </div>
+
+      <!-- 成绩统计页面 -->
+      <div id="scores-screen" class="screen">
+        <div class="scores-content">
+          <div class="scores-header">
+            <button class="btn btn--outline back-btn" id="scores-back">
+              ← 返回设置
+            </button>
+            <h2>📊 学习成绩统计</h2>
+          </div>
+
+          <div class="stats-container">
+            <div class="overall-stats">
+              <h3>📈 总体统计</h3>
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-value" id="total-sessions">0</div>
+                  <div class="stat-label">练习次数</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" id="average-score">0</div>
+                  <div class="stat-label">平均分数</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" id="best-score">0</div>
+                  <div class="stat-label">最高分数</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" id="activities-completed">0</div>
+                  <div class="stat-label">活动类型</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-stats">
+              <h3>🎯 分项成绩</h3>
+              <div class="activity-list" id="activity-stats-list">
+                <!-- 动态生成 -->
+              </div>
+            </div>
+
+            <div class="recommendations">
+              <h3>💡 学习建议</h3>
+              <div class="recommendations-list" id="recommendations-list">
+                <!-- 动态生成 -->
+              </div>
+            </div>
+
+            <div class="recent-sessions">
+              <h3>📅 最近练习</h3>
+              <div class="sessions-list" id="recent-sessions-list">
+                <!-- 动态生成 -->
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -184,6 +326,12 @@
             </button>
             <button
               class="btn btn--primary activity-btn"
+              data-activity="letter-choice"
+            >
+              🔤 Letter Choice
+            </button>
+            <button
+              class="btn btn--primary activity-btn"
               data-activity="pronunciation"
             >
               🎤 Pronunciation Practice
@@ -262,6 +410,57 @@
               </div>
             </div>
             <div class="feedback" id="answer-feedback"></div>
+          </div>
+
+          <!-- Letter Choice -->
+          <div id="letter-choice-game" class="activity hidden">
+            <div class="game-scene">
+              <div class="sky-section">
+                <div class="sun">🌞</div>
+                <div class="clouds">☁️ ☁️</div>
+              </div>
+
+              <div class="game-content">
+                <h3 class="game-title">🔤 Letter Detective! 🔤</h3>
+
+                <div class="question-container">
+                  <p class="question-text" id="letter-choice-question">
+                    Yesterday, I went to the park.
+                  </p>
+                  <div class="hint-text" id="letter-choice-hint">
+                    (Hint: past form of "go")
+                  </div>
+                </div>
+
+                <div class="word-display">
+                  <h4 class="word-title">Complete the word:</h4>
+                  <div class="word-letters" id="word-letters">
+                    <!-- Word letters with blank will be generated here -->
+                  </div>
+                </div>
+
+                <div class="choices-area">
+                  <h4 class="choices-title">Choose the missing letter:</h4>
+                  <div class="letter-choices" id="letter-choices">
+                    <!-- Letter choice buttons will be generated here -->
+                  </div>
+                </div>
+
+                <div class="game-controls">
+                  <button class="btn btn--secondary" id="hear-letter-question">
+                    🔊 Listen
+                  </button>
+                  <button class="btn btn--outline" id="next-letter-word">
+                    🔄 New Word
+                  </button>
+                </div>
+              </div>
+
+              <div class="ground-section">
+                <div class="flowers">🌸 🌼 🌸 🌼 🌸</div>
+              </div>
+            </div>
+            <div class="feedback" id="letter-choice-feedback"></div>
           </div>
 
           <!-- Pronunciation Practice -->
@@ -358,6 +557,15 @@
       </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script src="src/js/scoreManager.js"></script>
+    <script src="src/js/scoreUI.js"></script>
+    <script src="src/js/loginManager.js"></script>
+    <script src="src/js/firebaseSync.js"></script>
     <script type="module" src="src/js/app.js"></script>
   </body>
 </html>
