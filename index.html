@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Verb Learning Adventure</title>
     <link rel="stylesheet" href="src/css/style.css" />
+    <link rel="stylesheet" href="src/css/animations.css" />
+    <link rel="stylesheet" href="src/css/components.css" />
+    <link rel="stylesheet" href="src/css/screens.css" />
+    <link rel="stylesheet" href="src/css/settings.css" />
+    <link rel="stylesheet" href="src/css/score.css" />
+    <link rel="stylesheet" href="src/css/reading.css" />
   </head>
   <body>
     <div class="app-container">
@@ -65,32 +71,39 @@
             Learn verb forms in a fun and easy way!
           </p>
           <div class="mode-buttons">
-            <button
-              class="btn btn--primary btn--large mode-btn"
-              data-mode="learn"
-            >
-              📚 Learn Mode
-              <span class="mode-description"
-                >Discover new verbs with examples</span
+              <button
+                class="btn btn--primary btn--large mode-btn"
+                data-mode="learn"
               >
-            </button>
-            <button
-              class="btn btn--primary btn--large mode-btn"
-              data-mode="practice"
-            >
-              🎯 Practice Mode
-              <span class="mode-description"
-                >Interactive games and exercises</span
+                📚 Learn Mode
+                <span class="mode-description"
+                  >Discover new verbs with examples</span
+                >
+              </button>
+              <button
+                class="btn btn--primary btn--large mode-btn"
+                data-mode="practice"
               >
-            </button>
-            <button
-              class="btn btn--primary btn--large mode-btn"
-              data-mode="challenge"
-            >
-              🏆 Challenge Mode
-              <span class="mode-description">Test your knowledge</span>
-            </button>
-          </div>
+                🎯 Practice Mode
+                <span class="mode-description"
+                  >Interactive games and exercises</span
+                >
+              </button>
+              <button
+                class="btn btn--primary btn--large mode-btn"
+                data-mode="challenge"
+              >
+                🏆 Challenge Mode
+                <span class="mode-description">Test your knowledge</span>
+              </button>
+              <button
+                class="btn btn--success btn--large mode-btn"
+                data-mode="reading"
+              >
+                📖 Reading Mode
+                <span class="mode-description">Practice with text passages</span>
+              </button>
+            </div>
           <div class="settings-section">
             <button class="btn btn--outline settings-btn" id="settings-btn">
               ⚙️ Settings
@@ -104,15 +117,31 @@
         <div class="settings-content">
           <h2>Settings</h2>
           <div class="setting-group">
-            <label class="form-label">Speech Speed:</label>
-            <select id="speech-speed" class="form-control">
-              <option value="0.7">Slow</option>
-              <option value="1" selected>Normal</option>
-              <option value="1.3">Fast</option>
+            <label class="form-label">语音选择:</label>
+            <select id="voice-selection" class="form-control">
+              <option value="">自动选择最佳语音</option>
+              <!-- 动态生成语音选项 -->
             </select>
           </div>
           <div class="setting-group">
-            <label class="form-label">Voice Volume:</label>
+            <label class="form-label">语速: <span id="speed-value">0.9</span></label>
+            <input
+              type="range"
+              id="speech-speed"
+              class="speed-slider"
+              min="0.5"
+              max="1.5"
+              step="0.1"
+              value="0.9"
+            />
+            <div class="slider-labels">
+              <span>慢</span>
+              <span>正常</span>
+              <span>快</span>
+            </div>
+          </div>
+          <div class="setting-group">
+            <label class="form-label">音量: <span id="volume-value">0.8</span></label>
             <input
               type="range"
               id="voice-volume"
@@ -122,6 +151,27 @@
               step="0.1"
               value="0.8"
             />
+            <div class="slider-labels">
+              <span>静音</span>
+              <span>最大</span>
+            </div>
+          </div>
+          <div class="setting-group">
+            <label class="form-label">音调: <span id="pitch-value">1.0</span></label>
+            <input
+              type="range"
+              id="voice-pitch"
+              class="pitch-slider"
+              min="0.5"
+              max="2.0"
+              step="0.1"
+              value="1.0"
+            />
+            <div class="slider-labels">
+              <span>低</span>
+              <span>正常</span>
+              <span>高</span>
+            </div>
           </div>
           <div class="setting-group">
             <label class="form-label">
@@ -551,6 +601,48 @@
             <button class="btn btn--primary" id="play-again">Play Again</button>
             <button class="btn btn--outline back-btn" id="back-to-menu">
               Back to Menu
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reading Mode Screen -->
+      <div id="reading-screen" class="screen">
+        <div class="reading-header">
+          <button class="btn btn--outline back-btn" id="reading-back">
+            ← Back
+          </button>
+          <div class="essay-selector-container">
+            <label for="essay-selector">选择文章:</label>
+            <select id="essay-selector" class="form-control">
+              <!-- 动态生成文章选项 -->
+            </select>
+          </div>
+        </div>
+        <div class="reading-content">
+          <h2 class="essay-title" id="essay-title">文章标题</h2>
+          <div class="essay-content" id="essay-content">
+            <!-- 动态生成文章内容 -->
+          </div>
+        </div>
+        <div class="reading-controls">
+          <div class="sentence-navigation">
+            <button class="btn btn--outline" id="prev-sentence" disabled>
+              ← 上一句
+            </button>
+            <button class="btn btn--outline" id="next-sentence">
+              下一句 →
+            </button>
+          </div>
+          <div class="reading-actions">
+            <button class="btn btn--secondary" id="read-sentence">
+              🔊 朗读当前句子
+            </button>
+            <button class="btn btn--primary" id="read-essay">
+              📚 朗读全文
+            </button>
+            <button class="btn btn--outline" id="recite-mode">
+              🎯 背诵模式
             </button>
           </div>
         </div>

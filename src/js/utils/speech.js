@@ -6,7 +6,60 @@ export class SpeechManager {
     this.isRecording = false;
     this.retryCount = 0;
     this.maxRetries = 3;
+    this.voices = [];
+    this.preferredVoice = null;
     this.initializeSpeechRecognition();
+    this.initializeVoices();
+  }
+
+  initializeVoices() {
+    // 等待语音加载完成
+    const loadVoices = () => {
+      this.voices = this.synthesis.getVoices();
+      
+      // 优先选择更自然的英语语音
+      const preferredVoiceNames = [
+        'Samantha', // macOS 自然女声
+        'Alex', // macOS 自然男声
+        'Karen', // Windows 自然女声
+        'David', // Windows 自然男声
+        'Google US English', // Chrome 自然语音
+        'Microsoft Zira - English (United States)', // Windows 10
+        'Microsoft David - English (United States)', // Windows 10
+      ];
+      
+      // 查找最佳语音
+      for (const voiceName of preferredVoiceNames) {
+        const voice = this.voices.find(v => 
+          v.name.includes(voiceName) && v.lang.startsWith('en')
+        );
+        if (voice) {
+          this.preferredVoice = voice;
+          console.log('Selected preferred voice:', voice.name);
+          break;
+        }
+      }
+      
+      // 如果没找到首选语音，选择第一个英语语音
+      if (!this.preferredVoice) {
+        this.preferredVoice = this.voices.find(v => 
+          v.lang.startsWith('en') && !v.name.includes('Google')
+        ) || this.voices.find(v => v.lang.startsWith('en'));
+      }
+      
+      if (this.preferredVoice) {
+        console.log('Using voice:', this.preferredVoice.name);
+      }
+    };
+    
+    // 语音可能需要时间加载
+    if (this.voices.length === 0) {
+      this.synthesis.addEventListener('voiceschanged', loadVoices);
+      // 也立即尝试一次
+      setTimeout(loadVoices, 100);
+    } else {
+      loadVoices();
+    }
   }
 
   initializeSpeechRecognition() {
@@ -28,15 +81,43 @@ export class SpeechManager {
     this.synthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = settings.speechSpeed || 1;
+    
+    // 使用选定的自然语音
+    if (this.preferredVoice) {
+      utterance.voice = this.preferredVoice;
+    }
+    
+    // 设置语音参数，使其更自然
+    utterance.rate = settings.speechSpeed || 0.9; // 稍微慢一点更自然
     utterance.volume = settings.voiceVolume || 0.8;
+    utterance.pitch = settings.voicePitch || 1.0; // 添加音调控制
     utterance.lang = settings.language || "en-US";
+    
+    // 为不同类型的文本调整参数
+    if (text.length < 10) {
+      // 短单词，稍微慢一点
+      utterance.rate = (settings.speechSpeed || 0.9) * 0.9;
+    }
 
     if (callback) {
       utterance.onend = callback;
     }
 
     this.synthesis.speak(utterance);
+  }
+  
+  // 获取可用语音列表
+  getAvailableVoices() {
+    return this.voices.filter(voice => voice.lang.startsWith('en'));
+  }
+  
+  // 设置首选语音
+  setPreferredVoice(voiceName) {
+    const voice = this.voices.find(v => v.name === voiceName);
+    if (voice) {
+      this.preferredVoice = voice;
+      console.log('Voice changed to:', voice.name);
+    }
   }
 
   startRecording(onResult, onError) {

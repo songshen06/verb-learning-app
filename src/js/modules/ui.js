@@ -17,6 +17,24 @@ export class UIManager {
       targetScreen.classList.add("active");
       this.currentScreen = screenId;
     }
+    
+    // Update active state for mode buttons
+    document.querySelectorAll(".mode-btn").forEach((btn) => {
+      if (btn.dataset.mode === screenId.replace("-screen", "")) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+    
+    // 特殊处理阅读模式
+    if (screenId === 'reading-screen') {
+      // 确保单词定义弹窗被隐藏
+      const popup = document.getElementById('word-definition-popup');
+      if (popup) {
+        popup.style.display = 'none';
+      }
+    }
   }
 
   showFeedback(message, type = "success") {

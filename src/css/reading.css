@@ -1,0 +1,295 @@
+/* 阅读模式样式 */
+
+/* 阅读屏幕容器 */
+#reading-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 阅读头部 */
+.reading-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* 文章选择器 */
+.essay-selector-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+#essay-selector {
+  min-width: 200px;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  font-size: var(--font-size-base);
+  appearance: none;
+  background-image: var(--select-caret-light);
+  background-repeat: no-repeat;
+  background-position: right var(--space-8) center;
+  background-size: 16px;
+  padding-right: 28px;
+}
+
+/* 阅读内容区域 */
+.reading-content {
+  flex: 1;
+  padding: var(--space-16);
+  overflow-y: auto;
+}
+
+/* 文章标题 */
+.essay-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-16);
+  color: var(--color-primary);
+  text-align: center;
+}
+
+/* 文章内容 */
+.essay-content {
+  font-size: var(--font-size-lg);
+  line-height: 1.8;
+  margin-bottom: var(--space-24);
+}
+
+/* 句子容器样式 */
+.sentence-container {
+  margin-bottom: var(--space-20);
+  padding: var(--space-16);
+  border-radius: var(--radius-base);
+  transition: background-color 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.sentence-container.current {
+  background-color: rgba(33, 128, 141, 0.1);
+  border-left: 3px solid var(--color-primary);
+  border-color: rgba(33, 128, 141, 0.2);
+}
+
+/* 句子文本样式 */
+.essay-sentence {
+  margin-bottom: var(--space-12);
+  padding: var(--space-8);
+  border-radius: var(--radius-base);
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  line-height: 1.6;
+}
+
+.essay-sentence:hover {
+  background-color: rgba(33, 128, 141, 0.05);
+}
+
+/* 单词按钮容器 */
+.word-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+  padding: var(--space-8);
+  background-color: rgba(33, 128, 141, 0.03);
+  border-radius: var(--radius-base);
+  border: 1px dashed rgba(33, 128, 141, 0.2);
+}
+
+/* 单词按钮样式 */
+.word-button {
+  padding: var(--space-4) var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.word-button:hover {
+  background-color: var(--color-primary);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.word-button.verb {
+  background-color: rgba(33, 128, 141, 0.1);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.word-button.time-phrase {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+  font-style: italic;
+}
+
+.word-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 单词样式 */
+.word {
+  position: relative;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 0 2px;
+  transition: background-color 0.2s ease;
+}
+
+.word:hover {
+  background-color: rgba(33, 128, 141, 0.15);
+}
+
+.verb {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.time-phrase {
+  color: var(--color-warning);
+  font-style: italic;
+}
+
+.hidden-word {
+  color: #999;
+  border-bottom: 1px dashed var(--color-primary);
+}
+
+/* 单词解释弹窗 */
+#word-definition-popup {
+  position: absolute;
+  width: 250px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  border: 1px solid var(--color-border);
+  display: none;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-12) var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+  background-color: rgba(33, 128, 141, 0.1);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.word-text {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.popup-close {
+  background: none;
+  border: none;
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.popup-content {
+  padding: var(--space-12) var(--space-16);
+}
+
+.definition {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.no-definition {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.popup-footer {
+  padding: var(--space-8) var(--space-16);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 阅读控制区域 */
+.reading-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-16);
+  border-top: 1px solid var(--color-border);
+  background-color: rgba(33, 128, 141, 0.05);
+}
+
+.sentence-navigation {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.reading-actions {
+  display: flex;
+  gap: var(--space-8);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .reading-controls {
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+  
+  .sentence-navigation,
+  .reading-actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 背诵模式按钮激活状态 */
+#recite-mode.active {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+/* 阅读进度指示器 */
+.reading-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-left: auto;
+}
+
+.progress-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.progress-bar {
+  width: 100px;
+  height: 6px;
+  background-color: rgba(33, 128, 141, 0.2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}

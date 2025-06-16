@@ -1,0 +1,14 @@
+.btn--success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.btn--success:hover {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.btn--small {
+  font-size: var(--font-size-sm);
+  padding: var(--space-4) var(--space-8);
+}

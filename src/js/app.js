@@ -4,6 +4,8 @@ import { DEFAULT_SETTINGS, GAME_SETTINGS } from "./config/settings.js";
 import { SpeechManager } from "./utils/speech.js";
 import { GameManager } from "./utils/game.js";
 import { UIManager } from "./modules/ui.js";
+import { ReadingMode } from "./modules/readingMode.js";
+import { essaysData, dictionaryData } from "./config/essays.js";
 
 class VerbLearningApp {
   constructor() {
@@ -22,6 +24,8 @@ class VerbLearningApp {
     this.currentLetterChoiceVerb = null;
     this.missingLetterIndex = 0;
     this.correctLetter = "";
+    // Reading mode
+    this.readingMode = new ReadingMode(this.speechManager);
 
     this.initializeApp();
   }
@@ -35,6 +39,7 @@ class VerbLearningApp {
     this.initializePracticeMode();
     this.initializeChallengeMode();
     this.initializeResultsScreen();
+    this.initializeReadingMode();
 
     // Load theme
     this.uiManager.loadTheme();
@@ -45,10 +50,27 @@ class VerbLearningApp {
     if (savedSettings) {
       this.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
     }
+    // 更新UI显示当前设置值
+    this.updateSettingsUI();
   }
 
   saveSettings() {
     localStorage.setItem("settings", JSON.stringify(this.settings));
+  }
+
+  // Reading Mode
+  initializeReadingMode() {
+    // 初始化阅读模式
+    this.readingMode.initialize(essaysData, this.settings);
+    
+    // 设置全局词典数据，供阅读模式使用
+    window.dictionaryData = dictionaryData;
+    
+    // 添加阅读模式按钮事件监听器
+    document.getElementById('reading-mode')?.addEventListener('click', () => {
+      this.uiManager.showScreen('reading');
+      this.readingMode.loadEssayList();
+    });
   }
 
   // Learn Mode
@@ -103,13 +125,45 @@ class VerbLearningApp {
       });
 
     // Settings
-    document.getElementById("speech-speed")?.addEventListener("change", (e) => {
-      this.settings.speechSpeed = parseFloat(e.target.value);
+    // 语音选择
+    document.getElementById("voice-selection")?.addEventListener("change", (e) => {
+      const voiceName = e.target.value;
+      if (voiceName) {
+        this.speechManager.setPreferredVoice(voiceName);
+        this.settings.preferredVoice = voiceName;
+      } else {
+        this.settings.preferredVoice = null;
+      }
       this.saveSettings();
     });
 
-    document.getElementById("voice-volume")?.addEventListener("input", (e) => {
-      this.settings.voiceVolume = parseFloat(e.target.value);
+    // 语速滑块
+    const speedSlider = document.getElementById("speech-speed");
+    const speedValue = document.getElementById("speed-value");
+    speedSlider?.addEventListener("input", (e) => {
+      const value = parseFloat(e.target.value);
+      this.settings.speechSpeed = value;
+      if (speedValue) speedValue.textContent = value.toFixed(1);
+      this.saveSettings();
+    });
+
+    // 音量滑块
+    const volumeSlider = document.getElementById("voice-volume");
+    const volumeValue = document.getElementById("volume-value");
+    volumeSlider?.addEventListener("input", (e) => {
+      const value = parseFloat(e.target.value);
+      this.settings.voiceVolume = value;
+      if (volumeValue) volumeValue.textContent = value.toFixed(1);
+      this.saveSettings();
+    });
+
+    // 音调滑块
+    const pitchSlider = document.getElementById("voice-pitch");
+    const pitchValue = document.getElementById("pitch-value");
+    pitchSlider?.addEventListener("input", (e) => {
+      const value = parseFloat(e.target.value);
+      this.settings.voicePitch = value;
+      if (pitchValue) pitchValue.textContent = value.toFixed(1);
       this.saveSettings();
     });
 
@@ -119,6 +173,79 @@ class VerbLearningApp {
         this.settings.autoPlayAudio = e.target.checked;
         this.saveSettings();
       });
+
+    // 初始化语音选择器
+    this.initializeVoiceSelector();
+  }
+
+  // 初始化语音选择器
+  initializeVoiceSelector() {
+    const voiceSelect = document.getElementById("voice-selection");
+    if (!voiceSelect) return;
+
+    // 等待语音加载完成
+    const populateVoices = () => {
+      const voices = this.speechManager.getAvailableVoices();
+      
+      // 清空现有选项（保留默认选项）
+      const defaultOption = voiceSelect.querySelector('option[value=""]');
+      voiceSelect.innerHTML = '';
+      if (defaultOption) {
+        voiceSelect.appendChild(defaultOption);
+      }
+      
+      // 添加可用语音选项
+      voices.forEach(voice => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+      });
+      
+      // 设置当前选中的语音
+      if (this.settings.preferredVoice) {
+        voiceSelect.value = this.settings.preferredVoice;
+        this.speechManager.setPreferredVoice(this.settings.preferredVoice);
+      }
+    };
+
+    // 语音可能需要时间加载
+    if (speechSynthesis.getVoices().length > 0) {
+      populateVoices();
+    } else {
+      speechSynthesis.addEventListener('voiceschanged', populateVoices);
+    }
+  }
+
+  // 更新设置UI显示
+  updateSettingsUI() {
+    // 更新滑块值和显示
+    const speedSlider = document.getElementById("speech-speed");
+    const speedValue = document.getElementById("speed-value");
+    if (speedSlider && speedValue) {
+      speedSlider.value = this.settings.speechSpeed;
+      speedValue.textContent = this.settings.speechSpeed.toFixed(1);
+    }
+
+    const volumeSlider = document.getElementById("voice-volume");
+    const volumeValue = document.getElementById("volume-value");
+    if (volumeSlider && volumeValue) {
+      volumeSlider.value = this.settings.voiceVolume;
+      volumeValue.textContent = this.settings.voiceVolume.toFixed(1);
+    }
+
+    const pitchSlider = document.getElementById("voice-pitch");
+    const pitchValue = document.getElementById("pitch-value");
+    if (pitchSlider && pitchValue) {
+      pitchSlider.value = this.settings.voicePitch || 1.0;
+      pitchValue.textContent = (this.settings.voicePitch || 1.0).toFixed(1);
+    }
+
+    // 更新其他设置
+    const autoPlayCheckbox = document.getElementById("auto-play-audio");
+    if (autoPlayCheckbox) {
+      autoPlayCheckbox.checked = this.settings.autoPlayAudio;
+    }
   }
 
   displayCurrentVerb() {
@@ -1323,6 +1450,9 @@ class VerbLearningApp {
         break;
       case "practice":
         this.resetPracticeMode();
+        break;
+      case "reading":
+        this.readingMode.loadEssayList();
         break;
     }
   }
