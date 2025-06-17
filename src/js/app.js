@@ -734,19 +734,9 @@ class VerbLearningApp {
       // Add celebration effect
       this.addCelebrationEffect();
 
-      // Ask if user wants to continue
+      // Automatically proceed to the next word
       setTimeout(() => {
-        const continueGame = confirm(
-          "🌟 Perfect! You got it right!\n\nWould you like to try another word?"
-        );
-        if (continueGame) {
-          this.setupFillBlankGame();
-        } else {
-          // Hide the activity and return to activity selector
-          document.querySelectorAll(".activity").forEach((activity) => {
-            activity.classList.add("hidden");
-          });
-        }
+        this.setupFillBlankGame();
       }, 2500);
     } else {
       this.uiManager.showFeedback(
